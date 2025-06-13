@@ -62,4 +62,4 @@ if __name__ == "__main__":
     # try:
     #     uvicorn.run(mcp.app, host="127.0.0.1", port=8000) # mcp.app exposes the ASGI app
     # except Exception as e:
-    #     print(f"Failed to start uvicorn: {e}") 
+    #     print(f"Failed to start uvicorn: {e}")

@@ -34,10 +34,9 @@ def register(mcp: FastMCP):
                 entities {
                   guid
                   name
-                  language
                   reporting
                   alertSeverity
-                  tags { key value }
+                  tags { key values }
                 }
                 nextCursor # TODO: Implement pagination for tools/resources if needed
               }
@@ -54,4 +53,4 @@ def register(mcp: FastMCP):
     # Add other APM-specific tools/resources here, e.g.,
     # - Get deployment markers
     # - Get key transactions
-    # - Get instance details 
+    # - Get instance details

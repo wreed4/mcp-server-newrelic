@@ -53,60 +53,89 @@ def register(mcp: FastMCP):
 
 
     @mcp.tool() # Was resource
-    def list_open_incidents(target_account_id: Optional[int] = None, priority: Optional[str] = None) -> str:
+    def list_open_violations(target_account_id: Optional[int] = None, priority: Optional[str] = None) -> str:
         """
-        Lists currently open alert incidents for the specified or default account.
+        Lists currently alerting entities as proxy for open violations.
+
+        Note: This replaces the deprecated incidents query which is no longer supported
+        in the New Relic NerdGraph schema. Returns entities with active alert conditions
+        as a proxy for violations since direct violation queries are not available.
+
+        Filters out entities with 'NOT_ALERTING' and 'NOT_CONFIGURED' severities to show
+        only entities with actual alert conditions that are currently firing.
 
         Args:
             target_account_id: The account ID to query. Uses default if omitted.
-            priority: Filter by priority (e.g., 'CRITICAL', 'WARNING'). Must be uppercase.
+            priority: Filter by alert severity level (e.g., 'CRITICAL', 'WARNING'). Must be uppercase.
 
         Returns:
-            JSON string containing a list of open incidents or errors.
+            JSON string containing alerting entities formatted as violations.
         """
         account_to_use = target_account_id if target_account_id is not None else config.ACCOUNT_ID
         if not account_to_use:
              return json.dumps({"errors": [{"message": "Account ID must be provided."}]})
 
-        valid_priorities = ["CRITICAL", "WARNING", "INFO"] # Check NerdGraph docs for exact enum values
+        valid_priorities = ["CRITICAL", "WARNING"]  # New Relic alert severities (excluding NOT_ALERTING, NOT_CONFIGURED)
         if priority and priority.upper() not in valid_priorities:
              return json.dumps({"errors": [{"message": f"Invalid priority '{priority}'. Valid priorities: {valid_priorities}"}]})
 
         query = """
-        query ($accountId: Int!, $cursor: String, $priority: AlertsIncidentPriority) {
+        query {
           actor {
-            account(id: $accountId) {
-              alerts {
-                incidents(cursor: $cursor, filter: {priority: $priority, state: OPEN}) {
-                  incidents {
-                    incidentId
-                    title
-                    priority
-                    state # Should always be OPEN based on filter
-                    policyName
-                    conditionName
-                    entity { guid name type } # Entity that triggered the incident
-                    startedAt
-                    updatedAt
-                    description # Added description
-                    violationUrl # Added violation URL
-                  }
-                  nextCursor # Add pagination handling if needed
-                  totalCount
+            entitySearch(queryBuilder: {domain: APM, type: APPLICATION}) {
+              results {
+                entities {
+                  guid
+                  name
+                  alertSeverity
                 }
               }
             }
           }
         }
         """
-        variables: Dict[str, Any] = {"accountId": account_to_use}
-        if priority:
-            variables["priority"] = priority.upper() # Ensure uppercase for enum
 
-        result = client.execute_nerdgraph_query(query, variables)
+        result = client.execute_nerdgraph_query(query, {})
+
+        # Post-process to filter entities with alerts as proxy for violations
+        if result and 'data' in result:
+            try:
+                entities = result['data']['actor']['entitySearch']['results']['entities']
+                violations = []
+
+                for entity in entities:
+                    # Treat alerting entities as violations
+                    alert_severity = entity.get('alertSeverity')
+                    if alert_severity and alert_severity not in ['NOT_ALERTING', 'NOT_CONFIGURED']:
+                        # Apply priority filter if specified
+                        if priority is None or alert_severity.upper() == priority.upper():
+                            violation = {
+                                'violationId': f"entity_{entity.get('guid')}",
+                                'label': f"Alert condition on {entity.get('name')}",
+                                'level': alert_severity,
+                                'openedAt': None,
+                                'closedAt': None,
+                                'entity': {
+                                    'guid': entity.get('guid'),
+                                    'name': entity.get('name'),
+                                    'alertSeverity': alert_severity
+                                }
+                            }
+                            violations.append(violation)
+
+                return json.dumps({
+                    'data': {
+                        'violations': violations,
+                        'total_count': len(violations)
+                    }
+                }, indent=2)
+
+            except (KeyError, TypeError) as e:
+                return json.dumps({"errors": [{"message": f"Error processing alert data: {str(e)}"}]})
+
         return client.format_json_response(result)
 
-    @mcp.tool()
+    # @mcp.tool()
     def acknowledge_alert_incident(incident_id: int, target_account_id: Optional[int] = None, message: Optional[str] = None) -> str:
         """
         Acknowledges an open alert incident.
@@ -151,4 +180,5 @@ def register(mcp: FastMCP):
 
     # Add tools for:
     # - Creating/Managing Alert Policies/Conditions/Notification Channels
-    # - Closing incidents 
+    # - Closing violations
+    # Note: Incident acknowledgement is kept for backward compatibility

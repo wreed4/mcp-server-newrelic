@@ -70,4 +70,4 @@ def format_json_response(result: Dict[str, Any]) -> str:
         error_message = f"Failed to serialize NerdGraph response to JSON: {e}"
         print(error_message)
         # Return an error structure if serialization fails
-        return json.dumps({"errors": [{"message": error_message, "original_result_type": str(type(result))}]}) 
+        return json.dumps({"errors": [{"message": error_message, "original_result_type": str(type(result))}]})

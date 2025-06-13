@@ -87,7 +87,7 @@ def register(mcp: FastMCP):
                   entityType
                   domain
                   accountId
-                  tags { key value }
+                  tags { key values }
                 }
                 nextCursor
               }
@@ -124,7 +124,7 @@ def register(mcp: FastMCP):
               accountId
               domain
               entityType
-              tags { key value }
+              tags { key values }
               # Common fields first
               reporting
               permalink
@@ -136,36 +136,27 @@ def register(mcp: FastMCP):
                 openedAt
                 closedAt
               }
-              alertConditions { # Get associated conditions
-                    name
-                    id
-                    enabled
-                    policy { id name } # Link to policy
-              }
-              relationships { # Get relationships
-                source { entity { guid name type } }
-                target { entity { guid name type } }
-                type
+              alertSeverity # Current alert severity level
+              relatedEntities { # Get relationships (replaces deprecated relationships field)
+                results {
+                  source {
+                    entity { guid name type }
+                  }
+                  target {
+                    entity { guid name type }
+                  }
+                  type
+                }
               }
 
               # Type-specific fragments
               ... on ApmApplicationEntity {
                 language
-                settings { applicationName }
                 runningAgentVersions { minVersion maxVersion }
-                applicationInstances(filter: { state: "RUNNING" }, count: 5) { # Get a few running instances
-                    host
-                    port
-                    agentSettings { agentVersion }
-                }
               }
               ... on BrowserApplicationEntity {
-                servingAgentVersion
-                settings { applicationName }
-                applicationId # Old ID
-              }
-              ... on MobileApplicationEntity {
-                 # Add relevant mobile fields, e.g., platform, versions
+                runningAgentVersions { minVersion maxVersion }
+                applicationId
               }
                ... on InfrastructureHostEntity {
                 hostSummary {
@@ -174,34 +165,22 @@ def register(mcp: FastMCP):
                     memoryUsedPercent
                     networkReceiveRate
                     networkTransmitRate
-                    # Add more summary fields if useful
                 }
-                operatingSystem
-                systemMemoryBytes
-                processorCount
-                kernelVersion
-                agentVersion
               }
                ... on SyntheticMonitorEntity {
                 monitorType
                 period
-                status
-                locationsPublic
-                locationsPrivate { guid name }
-                script { # Get script for scripted monitors
-                    text # Careful: might be large/sensitive
-                }
               }
                ... on DashboardEntity {
-                # Fetch dashboard pages/widgets if needed (can be complex)
-                pages(count: 10) { # Get first 10 pages
+                pages {
                     guid
                     name
-                    widgets(count: 10) { # Get first 10 widgets per page
+                    widgets {
                         id
                         title
-                        visualization # Type of widget
-                        # rawConfiguration # JSON config, might be too verbose
+                        visualization {
+                            id
+                        }
                     }
                 }
                }
@@ -240,4 +219,4 @@ def register(mcp: FastMCP):
 
         search_query_string = " AND ".join(conditions)
         # Return just the query *string* part
-        return search_query_string 
+        return search_query_string

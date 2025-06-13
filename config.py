@@ -20,4 +20,4 @@ else:
 
 
 # NerdGraph API Endpoint
-NERDGRAPH_URL = "https://api.newrelic.com/graphql" 
+NERDGRAPH_URL = "https://api.newrelic.com/graphql"

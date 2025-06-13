@@ -16,7 +16,7 @@ This MCP server exposes various New Relic capabilities as tools and resources, i
 *   **Entity Management:** Search for entities (Applications, Hosts, Monitors, etc.) and retrieve detailed information by GUID.
 *   **APM:** List Application Performance Monitoring (APM) applications.
 *   **Synthetics:** List Synthetic monitors and create simple browser monitors.
-*   **Alerts:** List alert policies, view open incidents, and acknowledge incidents.
+*   **Alerts:** List alert policies, view open violations, and acknowledge incidents.
 
 ## Prerequisites
 
@@ -88,8 +88,8 @@ Leave this terminal window running.
 3.  The client should automatically detect the running server and connect to it. You might see an indicator (like a 🔨 icon in Claude Desktop) showing that external tools are available.
 4.  You can now interact with your New Relic account using natural language or by directly invoking the tools listed below.
 
-    *   **Natural Language Example:** "Show me my APM applications" or "List open critical incidents in account 1234567"
-    *   **Direct Invocation (if supported):** `list_apm_applications()` or `list_open_incidents(priority='CRITICAL', target_account_id=1234567)`
+    *   **Natural Language Example:** "Show me my APM applications" or "List open critical violations in account 1234567"
+    *   **Direct Invocation (if supported):** `list_apm_applications()` or `list_open_violations(priority='CRITICAL', target_account_id=1234567)`
 
 ## Available Tools & Resources
 
@@ -192,12 +192,12 @@ The server provides the following functions accessible via the Model Context Pro
         *   `policy_name_filter` (Optional[str]): Filter policies where name contains this string.
     *   **Returns:** JSON string containing a list of alert policies.
 
-*   **Tool: `list_open_incidents`**
-    *   **Description:** Lists currently open alert incidents.
+*   **Tool: `list_open_violations`**
+    *   **Description:** Lists currently alerting entities as proxy for open violations (replaces deprecated incidents query). Filters out entities with no alert configuration.
     *   **Arguments:**
         *   `target_account_id` (Optional[int]): Account ID to query (uses default if omitted).
-        *   `priority` (Optional[str]): Filter by priority (`'CRITICAL'`, `'WARNING'`).
-    *   **Returns:** JSON string containing a list of open incidents.
+        *   `priority` (Optional[str]): Filter by alert severity level (`'CRITICAL'`, `'WARNING'`). Excludes NOT_ALERTING and NOT_CONFIGURED entities.
+    *   **Returns:** JSON string containing alerting entities formatted as violations.
 
 *   **Tool: `acknowledge_alert_incident`**
     *   **Description:** Acknowledges an open alert incident.
