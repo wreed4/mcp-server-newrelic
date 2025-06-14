@@ -3,7 +3,7 @@ import os
 from fastmcp import FastMCP
 
 # Import feature modules
-from features import common, entities, apm, synthetics, alerts
+from .features import common, entities, apm, synthetics, alerts
 
 # --- FastMCP Server Initialization ---
 # Dependencies are defined here, but execution relies on fastmcp CLI handling them
