@@ -4,9 +4,9 @@ from typing import Optional, Dict, Any
 from fastmcp import FastMCP
 
 # Import necessary functions and config from parent directory files
-# Use absolute imports assuming project root is in sys.path
-import client
-import config
+# Use relative imports within the package
+from .. import client
+from .. import config
 
 def register(mcp: FastMCP):
     """Registers common tools and resources with the FastMCP instance."""

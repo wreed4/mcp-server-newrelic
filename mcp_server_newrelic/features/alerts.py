@@ -2,8 +2,8 @@ import json
 from typing import Optional, Dict, Any
 from fastmcp import FastMCP
 
-import client
-import config
+from .. import client
+from .. import config
 
 def register(mcp: FastMCP):
     """Registers Alerts-related tools."""

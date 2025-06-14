@@ -2,10 +2,10 @@ import json
 from typing import List, Optional, Dict, Any
 from fastmcp import FastMCP
 
-# Use absolute imports
-import client
-import config
-from features import entities # Absolute import for sibling module
+# Use relative imports within the package
+from .. import client
+from .. import config
+from . import entities # Relative import for sibling module
 
 def register(mcp: FastMCP):
     """Registers Synthetics-related tools and resources."""
@@ -158,4 +158,4 @@ def register(mcp: FastMCP):
     # def get_synthetics_monitor_details(guid: str) -> str:
     #     """Retrieves detailed information for a specific Synthetic monitor by its GUID."""
     #     # Reuse the generic entity detail function from the entities module
-    #     return entities.get_entity_details(guid=guid) # Need to call the registered function 
+    #     return entities.get_entity_details(guid=guid) # Need to call the registered function

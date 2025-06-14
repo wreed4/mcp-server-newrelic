@@ -2,9 +2,9 @@ import json
 from typing import Optional
 from fastmcp import FastMCP
 
-# Use absolute imports
-import client
-import config
+# Use relative imports within the package
+from .. import client
+from .. import config
 
 def register(mcp: FastMCP):
     """Registers APM-related tools."""
