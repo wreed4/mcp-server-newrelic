@@ -28,7 +28,7 @@ alerts.register(mcp)
 
 print("Registering performance debugging guide prompt...")
 # --- Register Performance Debugging Guide Prompt ---
-@mcp.prompt("nerdgraph-performance-guide")
+@mcp.prompt()
 def nerdgraph_performance_debugging_guide():
     """
     Comprehensive guide for using New Relic's NerdGraph API to debug application performance issues.
