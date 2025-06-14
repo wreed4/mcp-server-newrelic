@@ -26,6 +26,34 @@ synthetics.register(mcp)
 print("Registering Alerts features...")
 alerts.register(mcp)
 
+print("Registering performance debugging guide prompt...")
+# --- Register Performance Debugging Guide Prompt ---
+@mcp.prompt("nerdgraph-performance-guide")
+def nerdgraph_performance_debugging_guide():
+    """
+    Comprehensive guide for using New Relic's NerdGraph API to debug application performance issues.
+
+    This prompt provides detailed examples and workflows for:
+    - Identifying slow applications and bottlenecks
+    - Entity-based performance analysis
+    - NRQL queries for deep-dive investigations
+    - Distributed tracing analysis
+    - Common debugging workflows
+    - Best practices and troubleshooting tips
+    """
+    try:
+        import os
+        # Get the root directory of the project
+        current_dir = os.path.dirname(__file__)  # features directory
+        parent_dir = os.path.dirname(current_dir)  # mcp_server_newrelic directory
+        root_dir = os.path.dirname(parent_dir)  # project root
+        guide_path = os.path.join(root_dir, 'nerdgraph-performance-debugging-guide.md')
+
+        with open(guide_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except FileNotFoundError as e:
+        return ""
+
 print("Feature registration complete.")
 
 # --- Entry point function for console script ---
