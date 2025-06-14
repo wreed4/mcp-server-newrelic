@@ -28,6 +28,11 @@ alerts.register(mcp)
 
 print("Feature registration complete.")
 
+# --- Entry point function for console script ---
+def main():
+    """Main entry point for the console script."""
+    mcp.run()
+
 # --- Main execution block (for info and potential direct run debugging) ---
 if __name__ == "__main__":
     # This block is primarily for informational purposes when the script is run directly.

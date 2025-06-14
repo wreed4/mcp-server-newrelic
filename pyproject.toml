@@ -10,7 +10,7 @@ requires-python = ">=3.8"
 dependencies = ["fastmcp", "requests"]
 
 [project.scripts]
-mcp-server-newrelic = "mcp_server_newrelic.server:mcp"
+mcp-server-newrelic = "mcp_server_newrelic.server:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
