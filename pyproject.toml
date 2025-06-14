@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mcp-server-newrelic"
+version = "0.1.0"
+description = "MCP server for New Relic integration"
+requires-python = ">=3.8"
+dependencies = ["fastmcp", "requests"]
+
+[project.scripts]
+mcp-server-newrelic = "server:mcp"
+
+[tool.setuptools.packages.find]
+where = ["."]
