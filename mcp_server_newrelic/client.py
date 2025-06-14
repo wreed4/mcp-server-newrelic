@@ -1,7 +1,7 @@
 import requests
 import json
 from typing import Optional, Dict, Any
-import config # Use direct import as it's top-level
+from . import config # Use relative import within the package
 
 def execute_nerdgraph_query(query: str, variables: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
