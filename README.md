@@ -52,6 +52,22 @@ export NEW_RELIC_ACCOUNT_ID="YOUR_ACCOUNT_ID"
 
 **Security Note:** Do not hardcode your API key in the source code. Using environment variables is the recommended approach. You can also use tools like `direnv` or place these `export` commands in your shell profile (`.zshrc`, `.bashrc`, etc.) for persistence, but be mindful of the security implications.
 
+## Optional: Enable Logging
+
+By default, the MCP server runs silently to avoid interfering with the MCP protocol. If you need to troubleshoot issues or debug the server's operation, you can optionally enable file-based logging:
+
+```bash
+export NEW_RELIC_MCP_LOG_FILE="/path/to/your/logfile.log"
+```
+
+When this environment variable is set, the server will write detailed logs to the specified file. The logs include:
+- API requests and responses
+- Configuration status
+- Feature registration
+- Error messages and debugging information
+
+**Note:** Logging is completely disabled by default and only activates when `NEW_RELIC_MCP_LOG_FILE` is set. The logs are written to a file and never to stdout/stderr to maintain MCP protocol compatibility.
+
 ## Running the Server
 
 Once configured, start the server using the `fastmcp` command-line tool:

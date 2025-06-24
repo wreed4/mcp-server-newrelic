@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "mcp-server-newrelic"
 version = "0.1.0"
 description = "MCP server for New Relic integration"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = ["fastmcp", "requests"]
 
 [project.scripts]

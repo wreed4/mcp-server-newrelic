@@ -1,9 +1,29 @@
 # server.py
 import os
+import logging
 from fastmcp import FastMCP
 
 # Import feature modules
 from .features import common, entities, apm, synthetics, alerts
+
+# Configure optional file-based logging (off by default)
+# Set NEW_RELIC_MCP_LOG_FILE environment variable to enable logging to a file
+def setup_logging():
+    log_file = os.getenv("NEW_RELIC_MCP_LOG_FILE")
+    if log_file:
+        logging.basicConfig(
+            level=logging.INFO,
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            filename=log_file,
+            filemode='a'
+        )
+    else:
+        # Disable logging by default - use NullHandler to suppress all output
+        logging.getLogger().addHandler(logging.NullHandler())
+        logging.getLogger().setLevel(logging.CRITICAL + 1)
+
+setup_logging()
+logger = logging.getLogger(__name__)
 
 # --- FastMCP Server Initialization ---
 # Dependencies are defined here, but execution relies on fastmcp CLI handling them
@@ -15,18 +35,18 @@ mcp = FastMCP(
 
 # --- Register Features ---
 # Call the register function from each feature module
-print("Registering common features...")
+logger.info("Registering common features...")
 common.register(mcp)
-print("Registering entity features...")
+logger.info("Registering entity features...")
 entities.register(mcp)
-print("Registering APM features...")
+logger.info("Registering APM features...")
 apm.register(mcp)
-print("Registering Synthetics features...")
+logger.info("Registering Synthetics features...")
 synthetics.register(mcp)
-print("Registering Alerts features...")
+logger.info("Registering Alerts features...")
 alerts.register(mcp)
 
-print("Registering performance debugging guide prompt...")
+logger.info("Registering performance debugging guide prompt...")
 # --- Register Performance Debugging Guide Prompt ---
 @mcp.prompt()
 def nerdgraph_performance_debugging_guide():
@@ -54,7 +74,7 @@ def nerdgraph_performance_debugging_guide():
     except FileNotFoundError as e:
         return ""
 
-print("Feature registration complete.")
+logger.info("Feature registration complete.")
 
 # --- Entry point function for console script ---
 def main():
@@ -67,24 +87,24 @@ if __name__ == "__main__":
     # The recommended way to run is: `fastmcp run server.py:mcp`
     # Direct execution (`python server.py`) does not automatically handle dependencies
     # listed in the FastMCP constructor.
-    print("\n--- New Relic MCP Server ---")
+    logger.info("\n--- New Relic MCP Server ---")
     # Check for required config (already checked in config.py, but good to double-check here)
     try:
         import config
         if not config.API_KEY:
-             print("ERROR: NEW_RELIC_API_KEY environment variable is not set.")
+             logger.error("NEW_RELIC_API_KEY environment variable is not set.")
         if not config.ACCOUNT_ID:
-            print("WARNING: NEW_RELIC_ACCOUNT_ID environment variable is not set. Some features require it.")
+            logger.warning("NEW_RELIC_ACCOUNT_ID environment variable is not set. Some features require it.")
     except ImportError:
-         print("ERROR: Could not import config.py")
+         logger.error("Could not import config.py")
     except Exception as e:
-         print(f"ERROR loading configuration: {e}")
+         logger.error(f"ERROR loading configuration: {e}")
 
 
-    print("\nThis script defines the MCP server instance.")
-    print("To run the server with dependency management, use the command:")
-    print("  fastmcp run server.py:mcp")
-    print("\nEnsure NEW_RELIC_API_KEY and NEW_RELIC_ACCOUNT_ID are set in your environment.")
+    logger.info("\nThis script defines the MCP server instance.")
+    logger.info("To run the server with dependency management, use the command:")
+    logger.info("  fastmcp run server.py:mcp")
+    logger.info("\nEnsure NEW_RELIC_API_KEY and NEW_RELIC_ACCOUNT_ID are set in your environment.")
 
     # You could potentially add code here to start the server directly using uvicorn
     # for development/debugging, but `fastmcp run` is the intended method.
