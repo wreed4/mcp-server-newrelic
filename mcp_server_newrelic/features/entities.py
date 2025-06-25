@@ -35,7 +35,6 @@ def register(mcp: FastMCP):
         Returns:
             A JSON string with the search results (list of entities with basic details) or errors.
         """
-        client.log_to_file(f"search_entities called with: name={name}, entity_type={entity_type}, domain={domain}, tags={tags}, target_account_id={target_account_id}, limit={limit}")
 
         conditions = []
         # Add account condition *only* if target_account_id is specified
@@ -44,16 +43,13 @@ def register(mcp: FastMCP):
              try:
                  acc_id = int(target_account_id)
                  conditions.append(f"accountId = {acc_id}")
-                 client.log_to_file(f"Added account condition: accountId = {acc_id}")
              except (ValueError, TypeError):
                   error_msg = f"Invalid target_account_id: {target_account_id}. Must be an integer."
-                  client.log_to_file(f"Error: {error_msg}")
                   return json.dumps({"errors": [{"message": error_msg}]})
         elif config.ACCOUNT_ID:
              # If no target is specified, but a global one exists, maybe default to it?
              # Or keep it broad? Let's keep it broad unless specified.
              # conditions.append(f"accountId = {config.ACCOUNT_ID}")
-             client.log_to_file("Searching across all accessible accounts. Specify target_account_id to limit.")
              logger.info("Searching across all accessible accounts. Specify target_account_id to limit.")
 
 
@@ -61,13 +57,10 @@ def register(mcp: FastMCP):
             # Basic escaping for potential single quotes in name
             escaped_name = name.replace("'", "\\'")
             conditions.append(f"name LIKE '%{escaped_name}%'")
-            client.log_to_file(f"Added name condition: name LIKE '%{escaped_name}%'")
         if entity_type:
             conditions.append(f"type = '{entity_type}'")
-            client.log_to_file(f"Added entity_type condition: type = '{entity_type}'")
         if domain:
             conditions.append(f"domain = '{domain}'")
-            client.log_to_file(f"Added domain condition: domain = '{domain}'")
         if tags:
             tag_conditions = []
             for tag in tags:
@@ -77,19 +70,16 @@ def register(mcp: FastMCP):
                      tag_conditions.append(f"tags.`{tag['key']}` = '{escaped_tag_value}'") # Use backticks for keys that might have special chars
             if tag_conditions:
                  conditions.append(" AND ".join(tag_conditions))
-                 client.log_to_file(f"Added tag conditions: {' AND '.join(tag_conditions)}")
 
         # Require at least one *non-account* search criterion
         # Need to check if conditions list only contains the accountId condition
         non_account_conditions_exist = any(not cond.strip().startswith("accountId") for cond in conditions)
         if not non_account_conditions_exist:
              error_msg = "At least one non-account search criterion (name, type, domain, tags) must be provided."
-             client.log_to_file(f"Error: {error_msg}")
              return json.dumps({"errors": [{"message": error_msg}]})
 
 
         search_query = " AND ".join(conditions)
-        client.log_to_file(f"Final search query: {search_query}")
 
         query = """
         query ($searchQuery: String!, $limit: Int) {
@@ -113,9 +103,7 @@ def register(mcp: FastMCP):
         }
         """
         variables = {"searchQuery": search_query, "limit": limit}
-        client.log_to_file(f"Executing NerdGraph query with variables: {variables}")
         result = client.execute_nerdgraph_query(query, variables)
-        client.log_to_file(f"NerdGraph query result: {result}")
         return client.format_json_response(result)
 
     @mcp.resource("newrelic://entity/{guid}")
@@ -129,11 +117,9 @@ def register(mcp: FastMCP):
         Returns:
             A JSON string containing the entity's details or errors.
         """
-        client.log_to_file(f"get_entity_details called with guid: {guid}")
 
         if not guid or not isinstance(guid, str):
             error_msg = "Valid entity GUID must be provided."
-            client.log_to_file(f"get_entity_details error: {error_msg}")
             return json.dumps({"errors": [{"message": error_msg}]})
 
         # This query is now quite large, maybe split fragments later if needed
@@ -213,9 +199,7 @@ def register(mcp: FastMCP):
         }
         """
         variables = {"guid": guid}
-        client.log_to_file(f"Executing NerdGraph query for entity details with variables: {variables}")
         result = client.execute_nerdgraph_query(query, variables)
-        client.log_to_file(f"get_entity_details completed for guid: {guid}")
         return client.format_json_response(result)
 
     @mcp.prompt()
